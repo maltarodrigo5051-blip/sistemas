@@ -1,0 +1,26 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.rodrigo.yerbis'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'com.rodrigo.yerbis'
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName '0.1'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    // La app no usa librerías externas: voz, red y JSON vienen con Android.
+    testImplementation 'junit:junit:4.13.2'
+}

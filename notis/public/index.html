@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Notis</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23121520'/%3E%3Cg fill='%23ff4d6d'%3E%3Crect x='14' y='6' width='4' height='3' rx='1'/%3E%3Cpath d='M6 22a10 10 0 0 1 20 0z'/%3E%3Crect x='4' y='23' width='24' height='3' rx='1.5'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="side" aria-label="Navegación">
+    <div class="brand"><span class="brand-mark" id="brandBell"><svg class="bell" viewBox="0 0 32 32" aria-hidden="true"><rect x="14" y="5" width="4" height="3" rx="1.2"/><path d="M5 22a11 11 0 0 1 22 0z"/><rect x="3" y="23" width="26" height="4" rx="2"/></svg></span>Notis</div>
+    <nav id="nav" class="nav"></nav>
+    <form id="groupForm" class="group-form">
+      <label class="sr" for="groupName">Nuevo grupo</label>
+      <input id="groupName" placeholder="Nuevo grupo…" maxlength="40" autocomplete="off">
+      <button type="submit" aria-label="Crear grupo">+</button>
+    </form>
+    <div class="side-foot">
+      <div class="engine"><span id="engineDot" class="dot"></span><span id="engineText">Iniciando…</span></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="top">
+      <div>
+        <h1 id="viewTitle">Todos</h1>
+        <p class="sub" id="viewSub">Revisa Kick, Twitch y YouTube cada minuto.</p>
+      </div>
+      <div class="top-actions">
+        <label class="select">Revisar cada
+          <select id="interval">
+            <option value="30">30 s</option><option value="60" selected>1 min</option>
+            <option value="120">2 min</option><option value="300">5 min</option>
+          </select>
+        </label>
+        <button class="btn ghost" id="soundBtn" aria-pressed="true">Sonido: sí</button>
+        <button class="btn ghost" id="notifBtn">Activar notificaciones</button>
+        <button class="btn ghost" id="testBtn">Probar alarma</button>
+        <button class="btn primary" id="checkBtn">Revisar ahora</button>
+      </div>
+    </header>
+
+    <section id="onair" class="onair" aria-labelledby="onairSign" aria-live="polite">
+      <div class="onair-sign" id="onairSign"><span class="onair-led" aria-hidden="true"></span>Al aire</div>
+      <div id="onairList" class="onair-list"></div>
+    </section>
+
+    <section class="panel add" aria-labelledby="addTitle">
+      <h2 id="addTitle">Agregar streamer o cuenta</h2>
+      <form id="addForm" class="add-form">
+        <div class="field grow">
+          <label for="addInput">Enlace o usuario</label>
+          <input id="addInput" required autocomplete="off" placeholder="kick.com/rainelissss · twitch.tv/… · youtube.com/@… · x.com/… · o solo el usuario">
+        </div>
+        <div class="field">
+          <label for="addName">Nombre (opcional)</label>
+          <input id="addName" autocomplete="off" placeholder="Si ya existe, se le suma la cuenta">
+        </div>
+        <fieldset class="field plats" id="addPlats">
+          <legend>Si es solo usuario, buscar en</legend>
+          <label><input type="checkbox" value="kick" checked> Kick</label>
+          <label><input type="checkbox" value="twitch" checked> Twitch</label>
+          <label><input type="checkbox" value="youtube" checked> YouTube</label>
+        </fieldset>
+        <button class="btn primary" type="submit">Agregar</button>
+      </form>
+      <p class="hint" id="addMsg" role="status"></p>
+    </section>
+
+    <section id="grid" class="grid" aria-label="Streamers"></section>
+
+    <section id="activity" class="panel activity" hidden aria-labelledby="actTitle">
+      <h2 id="actTitle">Actividad real</h2>
+      <p class="hint">Solo eventos que la app detectó de verdad. Nada simulado.</p>
+      <ol id="actList" class="act-list"></ol>
+    </section>
+
+    <section class="panel limits" aria-labelledby="limTitle">
+      <h2 id="limTitle">Qué revisa la app y qué no</h2>
+      <ul>
+        <li><b class="k">Kick</b> API pública de kick.com. Da título y espectadores.</li>
+        <li><b class="t">Twitch</b> vía decapi.me, un servicio público gratis (la API oficial de Twitch pide claves). Un usuario que no existe se ve como “apagado”.</li>
+        <li><b class="y">YouTube</b> revisa la página <code>/@canal/live</code>. Solo con enlaces tipo <code>@usuario</code>. Si YouTube cambia su página, puede dejar de detectar.</li>
+        <li><b class="x">X</b> e <b class="i">Instagram</b>: <strong>no se detectan publicaciones.</strong> Sus APIs son de pago o cerradas, y la app no lo va a fingir. Quedan como enlaces directos al perfil.</li>
+        <li>Solo revisa mientras esta pestaña y el servidor estén abiertos. El aviso puede tardar hasta un intervalo de revisión.</li>
+      </ul>
+    </section>
+  </main>
+</div>
+
+<div id="toasts" class="toasts" aria-live="assertive"></div>
+
+<dialog id="editDlg" class="dlg">
+  <form method="dialog" id="editForm">
+    <h2>Editar streamer</h2>
+    <div class="field"><label for="eName">Nombre</label><input id="eName" required maxlength="60"></div>
+    <div class="edit-grid" id="eAccounts"></div>
+    <div class="field"><label for="eAvatar">Foto de perfil desde</label>
+      <select id="eAvatar"><option value="">Automático</option><option value="kick">Kick</option><option value="twitch">Twitch</option><option value="youtube">YouTube</option></select></div>
+    <fieldset class="field"><legend>Grupos</legend><div id="eGroups" class="chips-check"></div></fieldset>
+    <div class="dlg-actions">
+      <button class="btn danger" value="delete" type="submit" formnovalidate>Eliminar</button>
+      <span class="spacer"></span>
+      <button class="btn ghost" value="cancel" type="submit" formnovalidate>Cancelar</button>
+      <button class="btn primary" value="save" type="submit">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="app.js"></script>
+</body>
+</html>

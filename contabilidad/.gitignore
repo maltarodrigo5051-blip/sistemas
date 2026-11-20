@@ -1,0 +1,8 @@
+# base de datos local (datos de cada usuario)
+data/
+# el driver H2 lo descarga run.ps1
+lib/
+
+# sistema
+Thumbs.db
+desktop.ini

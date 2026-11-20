@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Josué</string>
+    <string name="manos_descripcion">Permite que Josué controle el teléfono cuando se lo pides por voz: dar like, ir atrás o al inicio, deslizar, tocar Enviar en WhatsApp después de que digas que sí, y tomar una captura cuando le pides que vea tu pantalla.</string>
+</resources>

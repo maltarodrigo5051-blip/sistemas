@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- YERBIS 2.0: encabezado, 5 secciones y barra inferior. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#05080D"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <!-- 1. Encabezado -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="20dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="6dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/titulo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.12"
+                android:text="J.O.S.U.É."
+                android:textColor="#FFFFFF"
+                android:textSize="26sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:letterSpacing="0.15"
+                android:text="ASISTENTE PERSONAL INTELIGENTE"
+                android:textColor="#4DD0E1"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <View
+            android:id="@+id/puntoConexion"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/punto" />
+
+        <TextView
+            android:id="@+id/textoConexion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace"
+            android:text="EN LÍNEA"
+            android:textColor="#00E676"
+            android:textSize="11sp" />
+
+        <ImageView
+            android:id="@+id/encendido"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/boton_encendido"
+            android:clickable="true"
+            android:contentDescription="Apagar o prender a Josué"
+            android:focusable="true"
+            android:padding="9dp"
+            android:src="@android:drawable/ic_lock_power_off"
+            android:tint="#00E5FF" />
+    </LinearLayout>
+
+    <!-- Secciones: solo una visible a la vez -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- 2 y 3. Inicio: lo último que dijo YERBIS y el núcleo de voz -->
+        <LinearLayout
+            android:id="@+id/panelInicio"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp">
+
+            <TextView
+                android:id="@+id/fraseYerbis"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:fontFamily="sans-serif-light"
+                android:lineSpacingExtra="4dp"
+                android:maxLines="5"
+                android:ellipsize="end"
+                android:text="«Iniciando sistemas…»"
+                android:textColor="#E0F7FA"
+                android:textSize="22sp" />
+
+            <TextView
+                android:id="@+id/fraseUsuario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:textColor="#4D8A94"
+                android:textSize="15sp" />
+
+            <com.rodrigo.yerbis.Nucleo
+                android:id="@+id/nucleo"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:contentDescription="Asistente. Toca para hablar."
+                android:focusable="true" />
+
+            <TextView
+                android:id="@+id/estado"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:fontFamily="monospace"
+                android:gravity="center"
+                android:letterSpacing="0.15"
+                android:text="EN ESPERA"
+                android:textColor="#4DD0E1"
+                android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/adjuntar"
+                style="@style/BotonCian"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="12dp"
+                android:contentDescription="Pasarle a Josué una foto, video o documento"
+                android:text="📎  Foto, video o documento" />
+        </LinearLayout>
+
+        <!-- Chats: historial de la conversación -->
+        <ScrollView
+            android:id="@+id/panelChats"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/conversacion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="16dp" />
+        </ScrollView>
+
+        <!-- 4. Voz: selector con demostración -->
+        <ScrollView
+            android:id="@+id/panelVoz"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
+
+                <TextView
+                    style="@style/Seccion"
+                    android:text="VOZ DE YERBIS" />
+
+                <LinearLayout
+                    android:id="@+id/listaVoces"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Las voces IA de Gemini gratis dan pocas frases al día. Al acabarse, YERBIS usa la voz del teléfono hasta el día siguiente."
+                    android:textColor="#4D8A94"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Memoria: lo que YERBIS recuerda -->
+        <ScrollView
+            android:id="@+id/panelMemoria"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
+
+                <TextView
+                    style="@style/Seccion"
+                    android:text="CÓMO TE LLAMO" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/tarjeta"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="8dp">
+
+                    <EditText
+                        android:id="@+id/campoNombre"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:hint="Tu nombre"
+                        android:importantForAutofill="no"
+                        android:inputType="textPersonName|textCapWords"
+                        android:textColor="#FFFFFF"
+                        android:textColorHint="#4D8A94" />
+
+                    <Button
+                        android:id="@+id/guardarNombre"
+                        style="@style/BotonCian"
+                        android:text="Guardar" />
+                </LinearLayout>
+
+                <TextView
+                    style="@style/Seccion"
+                    android:text="CONVERSACIÓN" />
+
+                <TextView
+                    android:id="@+id/resumenMemoria"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#B2EBF2"
+                    android:textSize="15sp" />
+
+                <Button
+                    android:id="@+id/olvidarChat"
+                    style="@style/BotonCian"
+                    android:layout_marginTop="12dp"
+                    android:text="Olvidar la conversación" />
+
+                <Button
+                    android:id="@+id/olvidarTodo"
+                    style="@style/BotonCian"
+                    android:layout_marginTop="10dp"
+                    android:backgroundTint="#C62828"
+                    android:text="Borrar mi nombre y empezar de cero" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- Ajustes: claves -->
+        <ScrollView
+            android:id="@+id/panelAjustes"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
+
+                <TextView
+                    style="@style/Seccion"
+                    android:text="API KEY DE GEMINI" />
+
+                <LinearLayout
+                    android:id="@+id/cajaClave"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/tarjeta"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="8dp">
+
+                    <EditText
+                        android:id="@+id/clave"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:hint="Pega tu API key de Gemini"
+                        android:importantForAutofill="no"
+                        android:inputType="textPassword"
+                        android:textColor="#FFFFFF"
+                        android:textColorHint="#4D8A94" />
+
+                    <Button
+                        android:id="@+id/guardarClave"
+                        style="@style/BotonCian"
+                        android:text="Guardar" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/estadoClave"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="#4D8A94"
+                    android:textSize="13sp" />
+
+                <TextView
+                    style="@style/Seccion"
+                    android:text="PERMISOS PARA CONTROLAR EL TELÉFONO" />
+
+                <TextView
+                    android:id="@+id/estadoPermisos"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="4dp"
+                    android:textColor="#B2EBF2"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/permisoBurbuja"
+                    style="@style/BotonCian"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="10dp"
+                    android:text="Burbuja sobre otras apps" />
+
+                <Button
+                    android:id="@+id/permisoManos"
+                    style="@style/BotonCian"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="8dp"
+                    android:text="Controlar la pantalla (Accesibilidad)" />
+
+                <Button
+                    android:id="@+id/permisoAvisos"
+                    style="@style/BotonCian"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="8dp"
+                    android:text="Leer y responder notificaciones" />
+
+                <Button
+                    android:id="@+id/permisoSilencio"
+                    style="@style/BotonCian"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="8dp"
+                    android:text="Poner el teléfono en silencio (No molestar)" />
+
+                <Button
+                    android:id="@+id/permisoBateria"
+                    style="@style/BotonCian"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="8dp"
+                    android:text="Que Xiaomi no lo cierre (batería)" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="20dp"
+                    android:text="En Xiaomi, si Accesibilidad o Notificaciones aparecen bloqueadas: Ajustes › Apps › Josué › ⋮ (arriba a la derecha) › «Permitir ajustes restringidos», y vuelve a intentarlo."
+                    android:textColor="#4D8A94"
+                    android:textSize="13sp" />
+
+                <LinearLayout android:id="@+id/cajaFish" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone">
+                    <EditText android:id="@+id/claveFish" android:layout_width="0dp" android:layout_height="0dp" />
+                    <EditText android:id="@+id/idVozFish" android:layout_width="0dp" android:layout_height="0dp" />
+                    <Button android:id="@+id/guardarFish" android:layout_width="0dp" android:layout_height="0dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+    </FrameLayout>
+
+    <!-- 5. Navegación inferior -->
+    <LinearLayout
+        android:id="@+id/barra"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:background="@drawable/barra"
+        android:orientation="horizontal">
+
+        <TextView android:id="@+id/tabInicio" style="@style/Pestana" android:text="Inicio" />
+        <TextView android:id="@+id/tabChats" style="@style/Pestana" android:text="Chats" />
+        <TextView android:id="@+id/tabVoz" style="@style/Pestana" android:text="Voz" />
+        <TextView android:id="@+id/tabMemoria" style="@style/Pestana" android:text="Memoria" />
+        <TextView android:id="@+id/tabAjustes" style="@style/Pestana" android:text="Ajustes" />
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Banner de 320x180 que pide el launcher de Android TV. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <size android:width="320dp" android:height="180dp" />
+            <solid android:color="#0E1116" />
+        </shape>
+    </item>
+    <item android:drawable="@android:drawable/ic_btn_speak_now" android:gravity="center" />
+</layer-list>

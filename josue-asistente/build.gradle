@@ -1,0 +1,10 @@
+plugins {
+    id 'com.android.application' version '9.5.1' apply false
+}
+
+// OneDrive bloquea los archivos temporales de compilación mientras los sincroniza y rompe el build.
+// Por eso, en Windows, la carpeta build va fuera de OneDrive: %LOCALAPPDATA%\yerbis-build.
+def fueraDeOneDrive = System.getenv('LOCALAPPDATA')
+if (fueraDeOneDrive != null) {
+    allprojects { layout.buildDirectory = new File(fueraDeOneDrive, "yerbis-build/${project.name}") }
+}

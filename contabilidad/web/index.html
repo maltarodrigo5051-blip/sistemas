@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contabilidad</title>
+<script>try { const t = localStorage.getItem('tema'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- tokens: claro ---------- */
+  :root {
+    color-scheme: light;
+    --canvas:#F5F7FA; --paper:#FFFFFF; --ink:#1B2333; --muted:#5F6B80; --line:#E1E6EE; --suave:#F2F4F8; --hover:#F7F9FC;
+    --azul:#2F5BEA; --azul-hover:#2549C4; --azul-bg:#EBF0FD; --violeta:#5B45C9;
+    --ingreso:#15803D; --ingreso-bg:#E8F5EC; --gasto:#B42318; --gasto-bg:#FCEDEB; --pasivo:#A15C07; --pasivo-bg:#FDF2E2;
+    --sombra:0 1px 2px #1B23330D; --sombra-alta:0 8px 24px #1B23331F;
+  }
+  /* ---------- tokens: oscuro ---------- */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --canvas:#0E131D; --paper:#151B27; --ink:#E4E8F0; --muted:#8F9AB0; --line:#252E3E; --suave:#1A2130; --hover:#1C2433;
+      --azul:#5C82F2; --azul-hover:#7896F5; --azul-bg:#1D2A4A; --violeta:#8C7BEA;
+      --ingreso:#46BF7A; --ingreso-bg:#15301F; --gasto:#F07167; --gasto-bg:#3A1C1B; --pasivo:#E2A04A; --pasivo-bg:#33260F;
+      --sombra:0 1px 2px #00000040; --sombra-alta:0 8px 24px #00000066;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --canvas:#0E131D; --paper:#151B27; --ink:#E4E8F0; --muted:#8F9AB0; --line:#252E3E; --suave:#1A2130; --hover:#1C2433;
+    --azul:#5C82F2; --azul-hover:#7896F5; --azul-bg:#1D2A4A; --violeta:#8C7BEA;
+    --ingreso:#46BF7A; --ingreso-bg:#15301F; --gasto:#F07167; --gasto-bg:#3A1C1B; --pasivo:#E2A04A; --pasivo-bg:#33260F;
+    --sombra:0 1px 2px #00000040; --sombra-alta:0 8px 24px #00000066;
+  }
+
+  * { box-sizing:border-box; }
+  html, body { margin:0; }
+  body { font:14px/1.5 "IBM Plex Sans", system-ui, sans-serif; background:var(--canvas); color:var(--ink);
+         display:grid; grid-template-columns:240px 1fr; min-height:100vh; transition:background .2s, color .2s; }
+  body > *, .rejilla > *, .resultado > * { min-width:0; } /* evita que la rejilla crezca más que la pantalla */
+  :focus-visible { outline:2px solid var(--azul); outline-offset:2px; }
+
+  /* barra de carga superior */
+  #carga { position:fixed; top:0; left:0; height:3px; width:0; background:var(--azul); z-index:30; opacity:0; pointer-events:none; }
+  #carga.activo { width:75%; opacity:1; transition:width 1.5s cubic-bezier(.1,.6,.3,1); }
+  #carga.fin { width:100%; opacity:0; transition:width .2s ease, opacity .3s ease .2s; }
+
+  /* ---------- menú lateral ---------- */
+  aside { background:var(--paper); border-right:1px solid var(--line); padding:20px 12px; display:flex; flex-direction:column; gap:24px;
+          position:sticky; top:0; height:100vh; }
+  .marca { display:flex; align-items:center; gap:10px; font-weight:700; font-size:16px; padding:0 10px; height:28px; }
+  .marca small { display:block; font-weight:400; font-size:12px; color:var(--muted); line-height:1.2; }
+  .seccion-nav { font-size:12px; color:var(--muted); padding:0 12px; margin-bottom:4px; }
+  nav { display:flex; flex-direction:column; gap:2px; }
+  nav button { position:relative; display:flex; align-items:center; gap:12px; background:none; border:0; color:var(--muted); font:inherit; font-weight:500;
+               padding:9px 12px; border-radius:8px; cursor:pointer; text-align:left; }
+  nav button svg { width:18px; height:18px; flex:none; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  nav button:hover { background:var(--suave); color:var(--ink); transform:translateX(2px); box-shadow:none; }
+  nav button.activo { background:var(--azul-bg); color:var(--azul); font-weight:600; }
+  nav button.activo::before { content:""; position:absolute; left:-12px; top:8px; bottom:8px; width:3px; border-radius:0 3px 3px 0; background:var(--azul); }
+  .pie { margin-top:auto; font-size:12px; padding:12px; color:var(--muted); border-top:1px solid var(--line); }
+
+  /* ---------- barra superior ---------- */
+  .contenido { display:flex; flex-direction:column; min-width:0; }
+  .topbar { position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:12px; height:60px; padding:0 clamp(16px, 4vw, 32px);
+            background:color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  .miga { color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .miga b { color:var(--ink); font-weight:600; }
+  .topbar .derecha { margin-left:auto; display:flex; align-items:center; gap:10px; }
+  .estado { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); padding:4px 10px; border:1px solid var(--line); border-radius:99px; white-space:nowrap; }
+  .estado::before { content:""; width:7px; height:7px; border-radius:50%; background:var(--muted); }
+  .estado.en-linea::before { background:var(--ingreso); box-shadow:0 0 0 3px var(--ingreso-bg); }
+  .estado.fuera::before { background:var(--gasto); }
+  .fecha-hoy { font-size:13px; color:var(--muted); white-space:nowrap; }
+  .icono { width:36px; height:36px; padding:0; display:grid; place-items:center; }
+  .icono svg { width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  /* app.js siempre fija data-theme; el botón muestra el icono del modo al que se cambiará */
+  [data-theme="dark"] .luna, [data-theme="light"] .sol { display:none; }
+
+  /* ---------- contenido ---------- */
+  main { padding:28px clamp(16px, 4vw, 32px) 40px; max-width:1240px; width:100%; }
+  .cabecera { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:end; gap:12px; margin-bottom:20px; }
+  h1 { font-size:22px; font-weight:600; letter-spacing:-.01em; margin:0; }
+  .sub { color:var(--muted); margin:2px 0 0; }
+  h2 { font-size:15px; font-weight:600; margin:0 0 16px; }
+  .panel { background:var(--paper); border:1px solid var(--line); border-radius:10px; padding:20px; margin-bottom:16px; box-shadow:var(--sombra); }
+  .rejilla { display:grid; grid-template-columns:1.6fr 1fr; gap:16px; }
+  .rejilla > .panel { margin:0; }
+
+  /* dashboard */
+  .resultado { display:grid; grid-template-columns:auto 1fr; gap:32px; align-items:center; }
+  .resultado .cifra { font-size:clamp(28px, 4vw, 38px); font-weight:600; letter-spacing:-.02em; line-height:1.15; font-variant-numeric:tabular-nums; }
+  .resultado .etq { color:var(--muted); }
+  .balanza { display:flex; height:8px; border-radius:99px; overflow:hidden; background:var(--suave); gap:2px; }
+  .balanza span { transition:flex-grow .6s ease; }
+  .leyenda { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px 24px; margin-top:12px; color:var(--muted); }
+  .leyenda b { display:block; font-size:17px; font-weight:600; font-variant-numeric:tabular-nums; }
+  .punto { display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:6px; }
+  .indicadores { display:grid; grid-template-columns:repeat(3, 1fr); padding:0; }
+  .indicadores div { padding:16px 20px; }
+  .indicadores div + div { border-left:1px solid var(--line); }
+  .indicadores small { color:var(--muted); font-size:13px; }
+  .indicadores b { display:block; font-size:19px; font-weight:600; font-variant-numeric:tabular-nums; }
+
+  /* gráfico espejo: ingresos arriba, gastos abajo */
+  .grafico { display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:10px; height:220px; }
+  .mes { display:grid; grid-template-rows:1fr 1fr auto; text-align:center; font-size:12px; color:var(--muted); }
+  .mes .arriba, .mes .abajo { display:flex; justify-content:center; }
+  .mes .arriba { align-items:end; border-bottom:1px solid var(--line); }
+  .mes .abajo { align-items:start; }
+  .mes i { display:block; width:min(22px, 60%); border-radius:4px 4px 0 0; background:var(--ingreso); opacity:.85; transition:opacity .15s; }
+  .mes .abajo i { border-radius:0 0 4px 4px; background:var(--gasto); }
+  .mes:hover i { opacity:1; }
+  .mes span { padding-top:6px; }
+  .recientes { list-style:none; margin:0; padding:0; }
+  .recientes li { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .recientes li:last-child { border:0; }
+  .recientes small { display:block; color:var(--muted); }
+
+  /* formularios y botones */
+  form, .barra { display:flex; flex-wrap:wrap; gap:12px; align-items:end; }
+  .barra { margin-bottom:16px; }
+  label { display:flex; flex-direction:column; gap:4px; font-size:13px; font-weight:500; color:var(--muted); }
+  input, select, button { font:inherit; font-size:14px; padding:8px 12px; border:1px solid var(--line); border-radius:8px; background:var(--paper); color:var(--ink); }
+  input:focus, select:focus { border-color:var(--azul); outline:none; box-shadow:0 0 0 3px var(--azul-bg); }
+  button { cursor:pointer; font-weight:500; transition:transform .15s ease, background-color .15s, border-color .15s, box-shadow .15s; }
+  button:hover { transform:scale(1.04); border-color:var(--muted); box-shadow:var(--sombra-alta); }
+  button:active { transform:scale(.98); }
+  .primario { background:var(--azul); border-color:var(--azul); color:#fff; }
+  .primario:hover { background:var(--azul-hover); border-color:var(--azul-hover); }
+  .buscar { flex:1; min-width:200px; }
+  .exportar { margin-left:auto; display:flex; gap:8px; }
+  .exportar button { display:flex; align-items:center; gap:6px; }
+  .exportar svg { width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .tipo-mov { display:inline-flex; gap:0; border:1px solid var(--line); border-radius:8px; padding:3px; margin:0 0 20px; background:var(--suave); }
+  .tipo-mov label { flex-direction:row; align-items:center; gap:8px; padding:7px 18px; border-radius:6px; cursor:pointer; color:var(--muted); font-size:14px; }
+  .tipo-mov input { position:absolute; opacity:0; pointer-events:none; }
+  .tipo-mov label:has(:focus-visible) { outline:2px solid var(--azul); }
+  .tipo-mov label:has(input[value=ingreso]:checked) { background:var(--paper); color:var(--ingreso); font-weight:600; box-shadow:var(--sombra); }
+  .tipo-mov label:has(input[value=gasto]:checked) { background:var(--paper); color:var(--gasto); font-weight:600; box-shadow:var(--sombra); }
+  .campos { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; width:100%; }
+  .nota { color:var(--muted); font-size:13px; margin:16px 0 0; }
+
+  /* asiento */
+  .lineas { display:grid; gap:8px; margin:20px 0 12px; }
+  .linea { display:grid; grid-template-columns:minmax(200px, 2fr) 1fr 1fr auto; gap:8px; }
+  .encabezado-lineas { font-size:13px; font-weight:500; color:var(--muted); }
+  .cuadre { margin-left:auto; }
+
+  /* tablas */
+  .tabla { overflow-x:auto; border:1px solid var(--line); border-radius:8px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { padding:10px 14px; text-align:left; white-space:nowrap; }
+  th { font-size:12px; font-weight:600; color:var(--muted); background:var(--suave); position:sticky; top:0; }
+  td { border-top:1px solid var(--line); }
+  tbody tr:hover td { background:var(--hover); }
+  .num { text-align:right; font-variant-numeric:tabular-nums; }
+  tr.inicio td { border-top:1px solid var(--line); }
+  tr.cont td { border-top-color:transparent; }
+  tr.total td { font-weight:600; background:var(--suave); }
+  tr.grupo td { font-weight:600; padding-top:18px; color:var(--ink); }
+  td.sangria { padding-left:40px; }
+  .chip { display:inline-block; padding:1px 8px; border-radius:6px; font-size:12px; font-weight:500; }
+  .t-ACTIVO { background:var(--azul-bg); color:var(--azul); }
+  .t-PASIVO { background:var(--pasivo-bg); color:var(--pasivo); }
+  .t-PATRIMONIO { background:var(--suave); color:var(--violeta); }
+  .t-INGRESO { background:var(--ingreso-bg); color:var(--ingreso); }
+  .t-GASTO { background:var(--gasto-bg); color:var(--gasto); }
+  .ok { color:var(--ingreso); } .bad { color:var(--gasto); }
+  .vacio { padding:32px; text-align:center; color:var(--muted); }
+  .reportes { display:grid; gap:16px; }
+  .reportes .panel { margin:0; }
+  .reportes .barra { justify-content:space-between; align-items:center; }
+  .reportes h2 { margin:0; }
+
+  #msg { position:fixed; right:20px; bottom:20px; padding:10px 16px; border-radius:8px; color:#fff; font-weight:500; display:none; max-width:380px;
+         box-shadow:var(--sombra-alta); z-index:25; }
+
+  @media (max-width: 960px) {
+    body { grid-template-columns:1fr; }
+    aside { position:static; height:auto; padding:12px 16px; gap:10px; border-right:0; border-bottom:1px solid var(--line); }
+    nav { flex-direction:row; overflow-x:auto; }
+    nav button { white-space:nowrap; }
+    nav button.activo::before { display:none; }
+    .pie, .seccion-nav, .fecha-hoy { display:none; }
+    .rejilla, .resultado { grid-template-columns:1fr; gap:16px; }
+    .indicadores { grid-template-columns:1fr; }
+    .indicadores div + div { border-left:0; border-top:1px solid var(--line); }
+    .linea { grid-template-columns:1fr 1fr auto; }
+    .linea select { grid-column:1 / -1; }
+    .encabezado-lineas { display:none; }
+    .exportar { margin-left:0; }
+  }
+  @media (max-width: 520px) { .estado, .topbar .primario { display:none; } }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; } button:hover { transform:none; } }
+</style>
+</head>
+<body>
+<div id="carga" aria-hidden="true"></div>
+<aside>
+  <div class="marca">
+    <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"><rect width="28" height="28" rx="7" fill="#2F5BEA"/><path d="M8 18h12M8 13h12M14 7v14" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+    <div>Contabilidad<small>Sistema empresarial</small></div>
+  </div>
+  <div>
+    <div class="seccion-nav">Menú principal</div>
+    <nav>
+      <button data-tab="inicio" class="activo"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>
+      <button data-tab="registro"><svg viewBox="0 0 24 24"><path d="M12 3v18M17 7H9.5a3 3 0 0 0 0 6h5a3 3 0 0 1 0 6H6"/></svg>Ingresos y gastos</button>
+      <button data-tab="asiento"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 7h14M7 7l-3 7h6zM17 7l-3 7h6z"/></svg>Asiento contable</button>
+      <button data-tab="diario"><svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 21V5M8 8h7M8 12h7"/></svg>Libro diario</button>
+      <button data-tab="cuentas"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Plan de cuentas</button>
+      <button data-tab="reportes"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Reportes</button>
+    </nav>
+  </div>
+  <div class="pie">Montos en córdobas (C$)</div>
+</aside>
+
+<div class="contenido">
+<header class="topbar">
+  <div class="miga">Contabilidad / <b id="miga">Inicio</b></div>
+  <div class="derecha">
+    <span class="estado" id="estado">Conectando…</span>
+    <span class="fecha-hoy" id="fecha-hoy"></span>
+    <button class="icono" id="tema" aria-label="Cambiar entre modo claro y oscuro" title="Modo claro / oscuro">
+      <svg class="luna" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+    <button class="primario" data-ir="registro">Registrar movimiento</button>
+  </div>
+</header>
+
+<main>
+  <!-- ===== Inicio ===== -->
+  <section id="inicio">
+    <div class="cabecera"><div><h1>Resumen</h1><p class="sub" id="mes-actual"></p></div></div>
+    <div class="panel resultado">
+      <div>
+        <div class="etq" id="etq-resultado">Resultado del mes</div>
+        <div class="cifra" id="k-resultado">C$ 0.00</div>
+      </div>
+      <div>
+        <div class="balanza" role="img" id="balanza"><span style="background:var(--ingreso)"></span><span style="background:var(--gasto)"></span></div>
+        <div class="leyenda">
+          <div><span class="punto" style="background:var(--ingreso)"></span>Ingresos <b class="ok" id="k-ingresos">C$ 0.00</b></div>
+          <div style="text-align:right"><span class="punto" style="background:var(--gasto)"></span>Gastos <b class="bad" id="k-gastos">C$ 0.00</b></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel indicadores">
+      <div><small>Disponible en caja y bancos</small><b id="k-disponible">C$ 0.00</b></div>
+      <div><small>Por cobrar</small><b id="k-cobrar">C$ 0.00</b></div>
+      <div><small>Por pagar</small><b id="k-pagar">C$ 0.00</b></div>
+    </div>
+    <div class="rejilla">
+      <div class="panel">
+        <h2>Ingresos y gastos de los últimos 6 meses</h2>
+        <div class="grafico" id="grafico"></div>
+      </div>
+      <div class="panel">
+        <h2>Últimos asientos</h2>
+        <ul class="recientes" id="recientes"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Ingresos y gastos ===== -->
+  <section id="registro" hidden>
+    <div class="cabecera"><div><h1>Ingresos y gastos</h1><p class="sub">Registra una venta, un cobro o un pago. El asiento se crea solo.</p></div></div>
+    <div class="panel">
+      <form id="f-rapido">
+        <fieldset class="tipo-mov">
+          <legend hidden>Tipo de movimiento</legend>
+          <label><input type="radio" name="tipo" value="ingreso" checked> Ingreso</label>
+          <label><input type="radio" name="tipo" value="gasto"> Gasto</label>
+        </fieldset>
+        <div class="campos">
+          <label>Fecha <input type="date" name="fecha" required></label>
+          <label>Monto (C$) <input type="number" name="monto" step="0.01" min="0.01" required placeholder="0.00"></label>
+          <label>Concepto <select name="concepto" required></select></label>
+          <label>Cobrado / pagado con <select name="pago" required></select></label>
+          <label style="grid-column:1 / -1">Descripción <input name="descripcion" required placeholder="Ej. Venta de mercadería, pago de luz"></label>
+        </div>
+        <button class="primario" id="btn-rapido">Registrar ingreso</button>
+      </form>
+      <p class="nota" id="nota-rapido"></p>
+    </div>
+  </section>
+
+  <!-- ===== Asiento ===== -->
+  <section id="asiento" hidden>
+    <div class="cabecera"><div><h1>Asiento contable</h1><p class="sub">Partida doble: el total del debe debe ser igual al del haber.</p></div></div>
+    <div class="panel">
+      <form id="f-asiento">
+        <label>Fecha <input type="date" name="fecha" required></label>
+        <label style="flex:1;min-width:220px">Descripción <input name="descripcion" required placeholder="Ej. Pago a proveedor"></label>
+      </form>
+      <div class="lineas" id="lineas">
+        <div class="linea encabezado-lineas"><span>Cuenta</span><span>Debe</span><span>Haber</span><span></span></div>
+      </div>
+      <div class="barra">
+        <button type="button" id="mas-linea">Agregar línea</button>
+        <span class="cuadre" id="totales"></span>
+        <button class="primario" id="guardar-asiento">Guardar asiento</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Libro diario ===== -->
+  <section id="diario" hidden>
+    <div class="cabecera"><div><h1>Libro diario</h1><p class="sub">Todos los asientos en orden de fecha.</p></div></div>
+    <div class="panel">
+      <div class="barra">
+        <label>Desde <input type="date" id="d-desde"></label>
+        <label>Hasta <input type="date" id="d-hasta"></label>
+        <button id="d-filtrar">Filtrar</button>
+        <label class="buscar">Buscar <input type="search" data-buscar="t-diario" placeholder="Descripción, cuenta o número"></label>
+        <div class="exportar" data-tabla="t-diario"></div>
+      </div>
+      <div class="tabla"><table id="t-diario" data-titulo="Libro diario"></table></div>
+    </div>
+  </section>
+
+  <!-- ===== Cuentas ===== -->
+  <section id="cuentas" hidden>
+    <div class="cabecera"><div><h1>Plan de cuentas</h1><p class="sub">Las cuentas que usan tus asientos y reportes.</p></div></div>
+    <div class="panel">
+      <h2>Nueva cuenta</h2>
+      <form id="f-cuenta">
+        <label>Código <input name="codigo" required placeholder="1103"></label>
+        <label style="flex:1;min-width:200px">Nombre <input name="nombre" required placeholder="Caja chica"></label>
+        <label>Tipo <select name="tipo">
+          <option value="ACTIVO">Activo</option><option value="PASIVO">Pasivo</option><option value="PATRIMONIO">Patrimonio</option>
+          <option value="INGRESO">Ingreso</option><option value="GASTO">Gasto</option>
+        </select></label>
+        <button class="primario">Agregar cuenta</button>
+      </form>
+    </div>
+    <div class="panel">
+      <div class="barra">
+        <label class="buscar">Buscar <input type="search" data-buscar="t-cuentas" placeholder="Código o nombre"></label>
+        <div class="exportar" data-tabla="t-cuentas"></div>
+      </div>
+      <div class="tabla"><table id="t-cuentas" data-titulo="Plan de cuentas"></table></div>
+    </div>
+  </section>
+
+  <!-- ===== Reportes ===== -->
+  <section id="reportes" hidden>
+    <div class="cabecera">
+      <div><h1>Reportes financieros</h1><p class="sub">El balance general se calcula acumulado hasta la fecha final.</p></div>
+      <div class="barra" style="margin:0">
+        <label>Desde <input type="date" id="r-desde"></label>
+        <label>Hasta <input type="date" id="r-hasta"></label>
+        <button class="primario" id="r-generar">Generar</button>
+      </div>
+    </div>
+    <div class="reportes">
+      <div class="panel">
+        <div class="barra"><h2>Balance de comprobación</h2><div class="exportar" data-tabla="t-comprobacion"></div></div>
+        <div class="tabla"><table id="t-comprobacion" data-titulo="Balance de comprobación"></table></div>
+      </div>
+      <div class="rejilla">
+        <div class="panel">
+          <div class="barra"><h2>Balance general <span id="cuadre"></span></h2><div class="exportar" data-tabla="t-balance"></div></div>
+          <div class="tabla"><table id="t-balance" data-titulo="Balance general"></table></div>
+        </div>
+        <div class="panel">
+          <div class="barra"><h2>Estado de resultados</h2><div class="exportar" data-tabla="t-resultados"></div></div>
+          <div class="tabla"><table id="t-resultados" data-titulo="Estado de resultados"></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+</div>
+<div id="msg" role="status"></div>
+<!-- Visible hasta que app.js carga: si la página se abrió como archivo y no desde el servidor, nada funcionaría sin avisar -->
+<div id="sin-servidor" role="alert" style="position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:#0E131DE6;color:#fff;padding:16px;text-align:center">
+  <div style="max-width:440px">
+    <h1 style="font-size:22px;margin:0 0 8px">Abre el sistema desde el servidor</h1>
+    <p style="margin:0;color:#C9D1E0">Ejecuta <b>run.ps1</b> en la carpeta contabilidad y entra a <b>http://localhost:8080</b>. Abriendo el archivo index.html directamente, los menús no funcionan.</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
