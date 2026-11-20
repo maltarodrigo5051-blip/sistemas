@@ -2,14 +2,14 @@
 
 Programas que resuelven un trabajo concreto: llevar la contabilidad, cobrar en una caja, avisar de transmisiones en vivo y tener un asistente de voz. Tienen servidor, base de datos, validaciones y pruebas.
 
-Cada carpeta de este repositorio lleva al código completo del proyecto.
+Cada carpeta de este repositorio tiene el código completo del proyecto.
 
 | Proyecto | Para qué sirve | Tecnologías | Código |
 |---|---|---|---|
-| 📊 **Contabilidad** | Llevar la contabilidad de una empresa por partida doble | Java, SQL (H2), JavaScript | [contabilidad](https://github.com/maltarodrigo5051-blip/contabilidad) |
-| 🧾 **Punto de venta** | Cobrar en una pulpería o minisúper con lector de código de barras | Python, SQLite, JavaScript | [lector-de-codigo-de-barra](https://github.com/maltarodrigo5051-blip/lector-de-codigo-de-barra) |
-| 🔔 **Notis** | Avisar cuando tus streamers entran en vivo | Python, JavaScript | [notis](https://github.com/maltarodrigo5051-blip/notis) |
-| 🎙️ **Josué** | Asistente de voz para Android con inteligencia artificial | Java, Android, Gemini API | [josue-asistente](https://github.com/maltarodrigo5051-blip/josue-asistente) |
+| 📊 **Contabilidad** | Llevar la contabilidad de una empresa por partida doble | Java, SQL (H2), JavaScript | [contabilidad](contabilidad/) |
+| 🧾 **Punto de venta** | Cobrar en una pulpería o minisúper con lector de código de barras | Python, SQLite, JavaScript | [lector-de-codigo-de-barra](lector-de-codigo-de-barra/) |
+| 🔔 **Notis** | Avisar cuando tus streamers entran en vivo | Python, JavaScript | [notis](notis/) |
+| 🎙️ **Josué** | Asistente de voz para Android con inteligencia artificial | Java, Android, Gemini API | [josue-asistente](josue-asistente/) |
 
 ---
 
@@ -56,7 +56,7 @@ Cada carpeta de este repositorio lleva al código completo del proyecto.
 ### Ver el código en tu computadora
 
 ```bash
-git clone --recurse-submodules https://github.com/maltarodrigo5051-blip/sistemas.git
+git clone https://github.com/maltarodrigo5051-blip/sistemas.git
 ```
 
 📂 Otros grupos: [Páginas web](https://github.com/maltarodrigo5051-blip/paginas-web) · [Tiendas en línea](https://github.com/maltarodrigo5051-blip/tiendas-online)
